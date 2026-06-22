@@ -20,15 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     /* ==========================================================
-       2. 메인 비주얼 스크롤 애니메이션 (사진 확대 & 글자 유기적 연동)
+       2. 통합 메인 비주얼 스크롤 인터랙션 (타임라인 병합)
        ========================================================== */
     const wrapper = document.querySelector('.main-visual-wrapper');
     const zoomBox = document.querySelector('.zoom-image-box');
     const subTitle = document.querySelector('.scroll-fade-up');
+    const colorOverlay = document.querySelector(".color-overlay");
+    const upBoxes = document.querySelectorAll(".up-box");
 
-    if (wrapper && zoomBox && subTitle) {
+    if (wrapper && zoomBox) {
         window.addEventListener('scroll', () => {
             const wrapperTop = wrapper.offsetTop;
             const wrapperHeight = wrapper.offsetHeight;
@@ -40,60 +41,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 메인 비주얼 섹션 전체의 스크롤 진행 비율 (0 ~ 1)
             let progress = (scrollTop - startScroll) / (endScroll - startScroll);
-            if (progress < 0) progress = 0;
-            if (progress > 1) progress = 1;
+            progress = Math.min(Math.max(progress, 0), 1);
 
-            /* [구간 1] progress: 0.0 ~ 0.5 ➡️ 우측 사진이 풀스크린으로 확대되는 단계 */
-            let stage1Progress = progress / 0.5; 
-            if (stage1Progress > 1) stage1Progress = 1;
+            /* ──────────────────────────────────────────────────
+               [구간 1] progress: 0.0 ~ 0.5 (스크롤 상반기)
+               => 우측 하단의 작은 사진이 풀스크린으로 확대되는 단계
+               ────────────────────────────────────────────────── */
+            if (progress <= 0.5) {
+                let stage1Progress = progress / 0.5; // 0 ~ 1 매핑
 
-            const currentWidth = 400 + (window.innerWidth - 400) * stage1Progress;
-            const currentHeight = 550 + (window.innerHeight - 550) * stage1Progress;
-            const currentRight = 10 * (1 - stage1Progress);
-            const currentBottom = 10 * (1 - stage1Progress);
-            const currentRadius = 6 * (1 - stage1Progress);
+                // 이미지 확대 연산
+                const currentWidth = 400 + (window.innerWidth - 400) * stage1Progress;
+                const currentHeight = 550 + (window.innerHeight - 550) * stage1Progress;
+                const currentRight = 10 * (1 - stage1Progress);
+                const currentBottom = 10 * (1 - stage1Progress);
+                const currentRadius = 6 * (1 - stage1Progress);
 
-            zoomBox.style.width = `${currentWidth}px`;
-            zoomBox.style.height = `${currentHeight}px`;
-            zoomBox.style.right = `${currentRight}%`;
-            zoomBox.style.bottom = `${currentBottom}%`;
-            zoomBox.style.borderRadius = `${currentRadius}px`;
+                zoomBox.style.width = `${currentWidth}px`;
+                zoomBox.style.height = `${currentHeight}px`;
+                zoomBox.style.right = `${currentRight}%`;
+                zoomBox.style.bottom = `${currentBottom}%`;
+                zoomBox.style.borderRadius = `${currentRadius}px`;
 
-            /* [구간 2] progress: 0.5 ~ 1.0 ➡️ 사진 고정 후 글자가 떠오르는 단계 */
-            if (progress >= 0.5) {
+                // 구간 2 및 박스 요소 초기화 (위로 역스크롤 시 대응)
+                if (colorOverlay) colorOverlay.style.opacity = 0;
+                upBoxes.forEach(box => box.style.transform = "translateY(100vh)");
+                chars.forEach(span => {
+                    span.style.opacity = 0;
+                    span.style.transform = 'translateY(30px)';
+                });
+                if (subTitle) {
+                    subTitle.style.opacity = 0;
+                    subTitle.style.transform = 'translateY(40px)';
+                }
+
+            /* ──────────────────────────────────────────────────
+               [구간 2] progress: 0.5 ~ 1.0 (스크롤 하반기)
+               => 사진은 풀스크린 고정, 글자 등장 및 네모 박스 4개 상승
+               ────────────────────────────────────────────────── */
+            } else {
+                // 이미지는 화면 크기로 완전히 고정
+                zoomBox.style.width = "100vw";
+                zoomBox.style.height = "100vh";
+                zoomBox.style.right = "0%";
+                zoomBox.style.bottom = "0%";
+                zoomBox.style.borderRadius = "0px";
+
                 let stage2Progress = (progress - 0.5) / 0.5; // 0 ~ 1 매핑
-                
-                // A. 타이틀 글자들 한 자씩 순차 등장 연산 (역방향 완벽 대응)
+
+                // A. 타이틀 글자들 한 자씩 순차 등장 (0.0 ~ 0.4 구간 활용)
                 chars.forEach((span, index) => {
                     const startWeight = index * 0.15; 
                     let charProgress = (stage2Progress - startWeight) / 0.4;
-                    if (charProgress < 0) charProgress = 0;
-                    if (charProgress > 1) charProgress = 1;
+                    charProgress = Math.min(Math.max(charProgress, 0), 1);
 
                     span.style.opacity = charProgress;
                     span.style.transform = `translateY(${30 * (1 - charProgress)}px)`;
                 });
 
-                // B. 서브 문구 떠오르기 효과
-                let subProgress = (stage2Progress - 0.4) / 0.6;
-                if (subProgress < 0) subProgress = 0;
-                if (subProgress > 1) subProgress = 1;
+                // B. 서브 문구 떠오르기 효과 (0.4 ~ 1.0 구간 활용)
+                if (subTitle) {
+                    let subProgress = (stage2Progress - 0.4) / 0.6;
+                    subProgress = Math.min(Math.max(subProgress, 0), 1);
 
-                subTitle.style.opacity = subProgress;
-                subTitle.style.transform = `translateY(${40 * (1 - subProgress)}px)`;
+                    subTitle.style.opacity = subProgress;
+                    subTitle.style.transform = `translateY(${40 * (1 - subProgress)}px)`;
+                }
 
-            } else {
-                // 스크롤을 다시 위로 올렸을 때 초기화 처리
-                chars.forEach(span => {
-                    span.style.opacity = 0;
-                    span.style.transform = 'translateY(30px)';
+                // C. 바탕 화면을 덮어줄 백그라운드 오버레이 작동
+                if (colorOverlay) {
+                    colorOverlay.style.opacity = stage2Progress;
+                }
+
+                // D. 4분의 1 크기 세로형 박스들이 엇박자로 매끄럽게 컴백 (Stagger 효과)
+                upBoxes.forEach((box, index) => {
+                    let delay = index * 0.12; // 각 박스가 출발할 딜레이 기준점 연산
+                    let individualProgress = (stage2Progress - delay) / (1 - delay);
+                    individualProgress = Math.min(Math.max(individualProgress, 0), 1);
+                    
+                    // 감속 곡선(Cubic Ease-Out) 효과를 수식으로 대입하여 한층 유연하게 상승 연출
+                    let easeProgress = 1 - Math.pow(1 - individualProgress, 3); 
+                    let translateY = 100 - (easeProgress * 100);
+
+                    box.style.transform = `translateY(${translateY}vh)`;
                 });
-                subTitle.style.opacity = 0;
-                subTitle.style.transform = 'translateY(40px)';
             }
         });
     }
-
 
     /* ==========================================================
        3. 일반 콘텐츠 스크롤 페이드인 (Intersection Observer)
@@ -102,61 +136,4 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const fadeObserverOptions = {
         root: null,
-        rootMargin: '0px 0px -100px 0px', // 뷰포트 하단 100px 전 미리 감지
-        threshold: 0.1
-    };
-
-    const fadeObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target); // 한 번 등장 후 관찰 해제
-            }
-        });
-    }, fadeObserverOptions);
-
-    fadeElements.forEach(el => fadeObserver.observe(el));
-
-
-    /* ==========================================================
-       4. Our System 탭 메뉴 마우스 호버(mouseenter) 전환 효과
-       ========================================================== */
-    const tabMenuItems = document.querySelectorAll('.tab-menu li');
-    const tabContents = document.querySelectorAll('.tab-content-box');
-
-    tabMenuItems.forEach(item => {
-        item.addEventListener('mouseenter', (e) => {
-            e.preventDefault();
-
-            // 모든 탭 active 클래스 초기화 후 현재 활성화
-            tabMenuItems.forEach(tab => tab.classList.remove('active'));
-            item.classList.add('active');
-
-            const targetTabId = item.getAttribute('data-tab');
-
-            // 타겟 콘텐츠만 active 노출 처리
-            tabContents.forEach(content => {
-                if (content.id === targetTabId) {
-                    content.classList.add('active');
-                } else {
-                    content.classList.remove('active');
-                }
-            });
-        });
-    });
-
-
-    /* ==========================================================
-       5. GNB 햄버거 메뉴 토글 로직
-       ========================================================== */
-    const menuToggle = document.querySelector('.menu-toggle');
-    const header = document.querySelector('.header');
-
-    if (menuToggle && header) {
-        menuToggle.addEventListener('click', () => {
-            menuToggle.classList.toggle('all-open');      // X자 모션 토글
-            header.classList.toggle('all-menu-mode');  // 전체 메뉴 풀다운 클래스 토글
-        });
-    }
-
-});
+        rootMargin:
