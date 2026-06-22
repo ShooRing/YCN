@@ -1,0 +1,450 @@
+/* ==========================================================
+   1. 공통 레이아웃 & 기본 요소
+   ========================================================== */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.flex-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+}
+.section {
+    padding: 120px 0;
+    position: relative;
+}
+
+/* ── 회색 사각형 이미지 플레이스홀더 ── */
+.image-placeholder {
+    background-color: #d9d9d9;
+    color: #777;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #c8c8c8;
+    border-radius: 6px;
+    text-align: center;
+    padding: 20px 40px;
+}
+.ratio-vertical { width: 450px; height: 600px; max-width: 100%; }
+.ratio-horizontal { width: 550px; height: 350px; max-width: 100%; }
+.ratio-square {
+    width: 300px; height: 300px; max-width: 100%;
+    background-color: #2c2d30; color: #aaa; border-color: #444;
+}
+.ratio-logo { width: 180px; height: 60px; font-size: 13px; }
+
+
+/* ==========================================================
+   2. 헤더 & GNB 네비게이션 (토글 메뉴 포함)
+   ========================================================== */
+.header {
+    position: fixed;
+    top: 0; left: 0; width: 100%;
+    z-index: 1000;
+    background-color: #797979; /* 시안 상단 회색 톤 반영 */
+    border-bottom: 2px solid #d32f2f; /* 시안의 붉은 가이드라인 반영 */
+    transition: background-color 0.3s ease;
+}
+.header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    position: relative;
+}
+.logo a { 
+    font-size: 24px; font-weight: 700; color: #fff; letter-spacing: 1px; 
+}
+
+/* GNB 대메뉴 레이아웃 */
+.gnb {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+.main-menu {
+    display: flex;
+    gap: 100px; /* 메뉴 간격 넓게 배치 */
+}
+.main-menu > li {
+    position: relative;
+    padding: 15px 0;
+    text-align: center;
+}
+.main-menu > li > a {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* 2depth 서브메뉴 기본 상태 (개별 마우스 오버용) */
+.main-menu > li .depth2 {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background-color: rgba(68, 68, 68, 0.95); /* 시안의 어두운 서브 배경색 */
+    min-width: 220px;
+    padding: 20px 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.main-menu > li .depth2 li {
+    margin-bottom: 12px;
+}
+.main-menu > li .depth2 li:last-child {
+    margin-bottom: 0;
+}
+.main-menu > li .depth2 li a {
+    font-size: 15px;
+    color: #eee;
+    display: block;
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+.main-menu > li .depth2 li a:hover {
+    color: #ffcccc; /* 서브메뉴 호버 시 포인트 컬러 */
+}
+
+/* 개별 메뉴 호버 액션 */
+.main-menu > li:hover .depth2 {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── 햄버거 토글 버튼 스타일 ── */
+.menu-toggle {
+    width: 30px;
+    height: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1001;
+}
+.menu-toggle span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+/* 햄버거 활성화 상태 (X자 변형) */
+.menu-toggle.all-open span:nth-child(1) {
+    transform: translateY(10px) rotate(45deg);
+}
+.menu-toggle.all-open span:nth-child(2) {
+    opacity: 0;
+}
+.menu-toggle.all-open span:nth-child(3) {
+    transform: translateY(-10px) rotate(-45deg);
+}
+
+/* ── 햄버거 활성화 시 전체 메뉴 풀다운 모드 ── */
+.header.all-menu-mode {
+    background-color: rgba(68, 68, 68, 0.98);
+    height: auto;
+}
+.header.all-menu-mode .main-menu > li .depth2 {
+    position: relative;
+    top: auto; left: auto;
+    transform: none;
+    background: none;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    padding: 25px 0 0 0;
+    display: block;
+}
+.header.all-menu-mode .main-menu {
+    align-items: flex-start;
+}
+
+
+/* ==========================================================
+   3. 스크롤 인터랙션 공통 애니메이션 세팅
+   ========================================================== */
+.observe-fade {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.observe-fade.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* ==========================================================
+   4. 본문 콘텐츠 섹션 레이아웃
+   ========================================================== */
+
+/* ── 통합 메인 비주얼 섹션 ── */
+.main-visual-wrapper {
+    position: relative;
+    height: 300vh; /* 애니메이션 타임라인 확보 */
+    background-color: #eeeeee;
+    padding: 0;
+}
+.sticky-container {
+    position: sticky;
+    top: 0; left: 0; width: 100%; height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+/* 초기 상태: 우측 하단에 위치한 작은 사각형 */
+.zoom-image-box {
+    position: absolute;
+    right: 10%; bottom: 10%;
+    width: 400px; height: 550px;
+    z-index: 1;
+    transform-origin: right bottom;
+    border-radius: 6px;
+    will-change: width, height, right, bottom, border-radius;
+}
+.zoom-image-box .image-placeholder {
+    width: 100%; height: 100%; border-radius: inherit;
+}
+/* 텍스트 배치 및 투명도 초기화 */
+.text-overlay-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+}
+.visual-text-box {
+    max-width: 600px;
+}
+.visual-text-box .main-title {
+    font-size: 52px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+/* "YCN은" 한 글자씩 처리용 */
+.char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(30px);
+    will-change: opacity, transform;
+}
+/* 서브 문구 초기 상태 */
+.scroll-fade-up {
+    font-size: 22px;
+    color: #fff;
+    line-height: 1.5;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(40px);
+    will-change: opacity, transform;
+}
+
+/* ── 슬로건 섹션 ── */
+.slogan-section { 
+    text-align: center; 
+    padding: 160px 0; 
+    background: linear-gradient(to bottom, #e2e2e2 0%, #ffffff 100%); 
+}
+.slogan-text { 
+    font-size: 56px; 
+    font-weight: 800; 
+    color: #fff; 
+    text-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+}
+
+/* ── 시스템 섹션 (배경 슬로건 흐르기 효과 업데이트) ── */
+.system-section { 
+    background-color: #fff; 
+    padding: 100px 0 160px 0; /* 하단 텍스트 공간 확보를 위해 패딩 아래쪽 확장 */
+    position: relative;
+    overflow: hidden; /* 흘러 넘치는 글자 숨김 */
+}
+
+/* 콘텐츠들이 흐르는 배경 글자보다 위로 올라오도록 뎁스 지정 */
+.system-section .container {
+    position: relative;
+    z-index: 2;
+}
+
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+.system-header .section-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 0;
+    letter-spacing: -1px;
+}
+.btn-more {
+    font-size: 14px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+.btn-more:hover { color: #333; }
+
+/* 탭 메뉴 */
+.tab-menu { 
+    display: flex; 
+    justify-content: space-between;
+    border-bottom: 1px solid #e8e8e8; 
+    margin-bottom: 50px; 
+}
+.tab-menu li { position: relative; flex: 1; text-align: center; }
+.tab-menu li a { display: block; padding: 18px 0; font-size: 14px; color: #999; font-weight: 700; transition: color 0.3s ease; }
+.tab-menu li:hover a { color: #444; }
+.tab-menu li.active a { color: #000; }
+.tab-menu li.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; width: 100%; height: 2px;
+    background-color: #000;
+}
+
+/* 탭 콘텐츠 */
+.tab-container { position: relative; min-height: 400px; }
+.tab-content-box {
+    display: flex; gap: 60px; align-items: flex-start;
+    position: absolute; top: 0; left: 0; width: 100%;
+    opacity: 0; visibility: hidden;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+}
+.tab-content-box.active { position: relative; opacity: 1; visibility: visible; transform: translateY(0); }
+.text-side { flex: 1; padding-top: 10px; }
+.text-side h4 { font-size: 26px; font-weight: 800; margin-bottom: 25px; color: #000; }
+.text-side .desc-text { font-size: 15px; line-height: 1.8; color: #888; margin-bottom: 40px; word-break: keep-all; }
+.btn-detail { display: inline-block; font-size: 15px; font-weight: 700; color: #000; padding-bottom: 6px; border-bottom: 2px solid #000; transition: all 0.3s; }
+.btn-detail:hover { color: #d32f2f; border-color: #d32f2f; }
+.image-side { flex: 1.2; }
+.image-side .image-placeholder { width: 100%; height: 400px; background-color: #c4c4c4; border: none; border-radius: 0; }
+
+/* ── [신규 추가] 배경 바텀 무한 흐르기 텍스트 스타일 ── */
+.bg-marquee-wrap {
+    position: absolute;
+    bottom: -120px; /* 섹션 맨 바텀에 걸치도록 배치 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    overflow: hidden;
+    z-index: -1; /* 콘텐츠보다 뒤쪽 레이어 */
+    pointer-events: none; /* 클릭 및 드래그 방해 방지 */
+    user-select: none;
+}
+.marquee-track {
+    display: flex;
+    width: max-content;
+    white-space: nowrap;
+    animation: textFlow 60s linear infinite; /* 30초 동안 무한 왼쪽 이동 */
+}
+.marquee-track span {
+    font-size: 130pt; /* 요구하신 130pt 크기 선언 */
+    font-weight: 900;
+    color: #e8e8e8; /* 요구하신 연한 회색 컬러 적용 */
+    opacity: 20%;
+    letter-spacing: -2px;
+    line-height: 1;
+    padding: 5vw;
+}
+
+/* 왼쪽으로 부드럽게 흐르는 애니메이션 키프레임 */
+@keyframes textFlow {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); } /* 절반만큼 밀었을 때 완벽한 루프 연결 */
+}
+
+/* 모바일 및 태블릿 미디어쿼리 내 보정 */
+@media (max-width: 992px) {
+    .tab-menu { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .marquee-track span { font-size: 80pt; } /* 화면이 작아질 땐 폰트 크기 유연화 */
+}
+@media (max-width: 768px) {
+    .tab-menu { grid-template-columns: repeat(2, 1fr); }
+    .tab-content-box { flex-direction: column-reverse; gap: 30px; }
+}
+/* ── 3SZONE 섹션 ── */
+.zone-section { background-color: #0c0d12; color: #fff; }
+.zone-box {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.03); padding: 60px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);
+}
+.zone-left h3 { font-size: 42px; margin-bottom: 10px; letter-spacing: 1px; }
+.btn-link {
+    display: inline-block; margin-top: 25px; padding: 12px 30px;
+    background-color: #fff; color: #000; font-weight: 600; border-radius: 25px; transition: all 0.3s;
+}
+.btn-link:hover { background-color: #d32f2f; color: #fff; }
+.icon-group { display: flex; gap: 15px; margin-top: 35px; }
+.icon-group span { font-size: 13px; background: rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 20px; }
+
+/* ── 파트너사 자동 롤링 슬라이더 ── */
+.partner-section { background-color: #f0f0f0; overflow: hidden; padding: 60px 0; }
+.partner-title { font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    }
+.slider-wrap { width: 100%; overflow: hidden; }
+.slider-track { display: flex; width: calc(220px * 10); animation: rolling infinite 20s linear; }
+.slide { width: 220px; display: flex; justify-content: center; align-items: center; }
+
+@keyframes rolling {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-220px * 5)); }
+}
+
+
+/* ==========================================================
+   5. 하단 푸터 영역
+   ========================================================== */
+.footer { background-color: #1a1a1a; color: #888; padding: 40px 0; font-size: 14px; border-top: 1px solid #2a2a2a; }
+.footer .container { display: flex; justify-content: space-between; align-items: center; }
+.footer-info p { margin-bottom: 6px; }
+.footer-info .copy { margin-top: 15px; font-size: 12px; }
+.footer-logo { font-size: 24px; font-weight: 700; color: #333; }
+
+
+/* ==========================================================
+   6. 반응형 모바일 미디어 쿼리
+   ========================================================== */
+@media (max-width: 768px) {
+    .flex-row, .tab-content-box, .zone-box, .footer .container { 
+        flex-direction: column; 
+        text-align: center; 
+    }
+    .gnb { 
+        display: none; 
+    }
+    .main-menu {
+        gap: 20px;
+    }
+    .slogan-text { 
+        font-size: 32px; 
+    }
+    .image-placeholder { 
+        width: 100%; height: auto; aspect-ratio: 4/3; 
+    }
+}
