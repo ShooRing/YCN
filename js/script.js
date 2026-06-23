@@ -8,9 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (splitTarget) {
         const textContent = splitTarget.textContent.trim();
-        splitTarget.textContent = ''; // 기존 텍스트 비우기
+        splitTarget.textContent = '';
         
-        // 글자를 배열로 쪼개어 각각 <span> 구조로 삽입
         chars = [...textContent].map(char => {
             const span = document.createElement('span');
             span.classList.add('char');
@@ -20,91 +19,160 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     /* ==========================================================
-       2. 메인 비주얼 스크롤 인터랙션 (에러 수정 및 타임라인 통합)
+       2. 메인 비주얼 스크롤 인터랙션 (7단계 기획 완벽 윤활 보정)
        ========================================================== */
     const visualWrapper = document.querySelector(".main-visual-wrapper");
-    const zoomImageBox = document.querySelector(".zoom-image-box");
+    const zoomBox = document.querySelector(".zoom-image-box");
+    const blackMask = document.querySelector(".black-mask-layer");
+    const whiteGradient = document.querySelector(".white-gradient-layer");
+    const marqueeWrap = document.querySelector(".final-marquee-wrap");
     const scrollFadeUp = document.querySelector(".scroll-fade-up");
 
-    if (visualWrapper && zoomImageBox && scrollFadeUp) {
+    if (visualWrapper && zoomBox && blackMask && whiteGradient && marqueeWrap && scrollFadeUp) {
         window.addEventListener("scroll", () => {
-            const rect = visualWrapper.getBoundingClientRect();
-            const startScroll = window.pageYOffset + rect.top;
-            const duration = visualWrapper.offsetHeight - window.innerHeight;
-            const currentScroll = window.pageYOffset - startScroll;
+            const wrapperTop = visualWrapper.offsetTop;
+            const wrapperHeight = visualWrapper.offsetHeight;
+            const scrollTop = window.pageYOffset;
+            const windowHeight = window.innerHeight;
 
-            // 전체 스크롤 진행 상황 비율 연산 (0 ~ 1)
-            let progress = Math.min(Math.max(currentScroll / duration, 0), 1);
+            const startScroll = wrapperTop;
+            const endScroll = wrapperTop + wrapperHeight - windowHeight;
 
-            /* [구간 A] progress: 0.0 ~ 0.5 ➡️ 우측 하단 이미지가 전체 화면으로 확대 */
-            if (progress <= 0.5) {
-                let stage1Progress = progress * 2; // 0 ~ 1 매핑
+            let progress = (scrollTop - startScroll) / (endScroll - startScroll);
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
+
+ /* --------------------------------------------------------
+               [1~2단계] progress 0.0 ~ 0.25 : 우측 사진 가변 확대
+               -------------------------------------------------------- */
+            if (progress <= 0.25) {
+                let stepProgress = progress / 0.25;
+
+                let currentWidth = 350 + (window.innerWidth - 350) * stepProgress;
+                let currentHeight = 450 + (window.innerHeight - 450) * stepProgress;
+                let currentRight = 5 * (1 - stepProgress);
+                let currentBottom = 10 * (1 - stepProgress);
+                let currentRadius = 6 * (1 - stepProgress);
+
+                zoomBox.style.width = `${currentWidth}px`;
+                zoomBox.style.height = `${currentHeight}px`;
+                zoomBox.style.right = `${currentRight}%`;
+                zoomBox.style.bottom = `${currentBottom}%`;
+                zoomBox.style.borderRadius = `${currentRadius}px`;
+
+                // [보정] 1~2단계에서는 #333 레이어 완벽 가림
+                blackMask.style.opacity = "0";
+                blackMask.style.visibility = "hidden";
+                whiteGradient.style.top = "100%";
+                marqueeWrap.style.display = "none";
+                chars.forEach(span => { span.style.opacity = 0; span.style.transform = 'translateY(30px)'; });
+                scrollFadeUp.style.opacity = 0; scrollFadeUp.style.transform = 'translateY(40px)';
+            }
+            
+            /* --------------------------------------------------------
+               [3단계] progress 0.25 ~ 0.45 : 사진 배경 위 글자 순차 노출
+               -------------------------------------------------------- */
+            else if (progress > 0.25 && progress <= 0.45) {
+                zoomBox.style.width = "100vw"; zoomBox.style.height = "100vh"; zoomBox.style.right = "0%"; zoomBox.style.bottom = "0%"; zoomBox.style.borderRadius = "0px";
                 
-                let currentWidth = 400 + (window.innerWidth - 400) * stage1Progress;
-                let currentHeight = 550 + (window.innerHeight - 550) * stage1Progress;
-                let currentRight = 10 * (1 - stage1Progress);
-                let currentBottom = 10 * (1 - stage1Progress);
-                let currentRadius = 6 * (1 - stage1Progress);
+                // [보정] 3단계에서도 #333 레이어 완벽 가림 (첫 접속 및 역방향 스크롤 대응)
+                blackMask.style.opacity = "0";
+                blackMask.style.visibility = "hidden";
+                whiteGradient.style.top = "100%";
+                marqueeWrap.style.display = "none";
 
-                zoomImageBox.style.width = `${currentWidth}px`;
-                zoomImageBox.style.height = `${currentHeight}px`;
-                zoomImageBox.style.right = `${currentRight}%`;
-                zoomImageBox.style.bottom = `${currentBottom}%`;
-                zoomImageBox.style.borderRadius = `${currentRadius}px`;
+                let stepProgress = (progress - 0.25) / 0.20;
 
-                // 상반기 구간에서는 타이틀 글자 및 서브 문구를 대기 상태로 유지
-                chars.forEach(span => {
-                    span.style.opacity = 0;
-                    span.style.transform = 'translateY(30px)';
-                });
-                scrollFadeUp.style.opacity = 0;
-                scrollFadeUp.style.transform = 'translateY(40px)';
-
-            /* [구간 B] progress: 0.5 ~ 1.0 ➡️ 이미지는 풀스크린 고정, 글자가 애니메이션으로 등장 */
-            } else {
-                zoomImageBox.style.width = "100vw";
-                zoomImageBox.style.height = "100vh";
-                zoomImageBox.style.right = "0%";
-                zoomImageBox.style.bottom = "0%";
-                zoomImageBox.style.borderRadius = "0px";
-
-                let stage2Progress = (progress - 0.5) * 2; // 후반 스크롤 진행도 정규화 (0 ~ 1)
-
-                // 타이틀 글자들 순차 등장 연산 (역방향 완벽 대응)
                 chars.forEach((span, index) => {
-                    const startWeight = index * 0.15; 
-                    let charProgress = (stage2Progress - startWeight) / 0.4;
-                    if (charProgress < 0) charProgress = 0;
-                    if (charProgress > 1) charProgress = 1;
-
-                    span.style.opacity = charProgress;
-                    span.style.transform = `translateY(${30 * (1 - charProgress)}px)`;
+                    const weight = index * 0.15;
+                    let charProg = (stepProgress - weight) / 0.4;
+                    charProg = Math.min(Math.max(charProg, 0), 1);
+                    span.style.opacity = charProg;
+                    span.style.transform = `translateY(${30 * (1 - charProg)}px)`;
                 });
 
-                // 서브 문구(scroll-fade-up) 떠오르기 효과
-                let subProgress = (stage2Progress - 0.4) / 0.6;
-                if (subProgress < 0) subProgress = 0;
-                if (subProgress > 1) subProgress = 1;
+                let subProg = (stepProgress - 0.4) / 0.6;
+                subProg = Math.min(Math.max(subProg, 0), 1);
+                scrollFadeUp.style.opacity = subProg;
+                scrollFadeUp.style.transform = `translateY(${40 * (1 - subProg)}px)`;
+            }
 
-                scrollFadeUp.style.opacity = subProgress;
-                scrollFadeUp.style.transform = `translateY(${40 * (1 - subProgress)}px)`;
+            /* --------------------------------------------------------
+               [4~5단계] progress 0.45 ~ 0.70 : #333 4단 스태거식 정밀 상승
+               -------------------------------------------------------- */
+            else if (progress > 0.45 && progress <= 0.70) {
+                zoomBox.style.width = "100vw"; zoomBox.style.height = "100vh"; zoomBox.style.right = "0%"; zoomBox.style.bottom = "0%"; zoomBox.style.borderRadius = "0px";
+                whiteGradient.style.top = "100%";
+                marqueeWrap.style.display = "none";
+
+                // [보정] 4단계 구간에 진입하는 순간에만 활성화하여 화면에 노출
+                blackMask.style.opacity = "1";
+                blackMask.style.visibility = "visible";
+                blackMask.style.top = "0%";
+
+                let stepProgress = (progress - 0.45) / 0.25;
+
+                let y1 = 100 - Math.min(Math.max(stepProgress * 1.5, 0), 1) * 100;
+                let y2 = 100 - Math.min(Math.max((stepProgress - 0.2) * 1.5, 0), 1) * 100;
+                let y3 = 100 - Math.min(Math.max((stepProgress - 0.4) * 1.5, 0), 1) * 100;
+                let y4 = 100 - Math.min(Math.max((stepProgress - 0.6) * 1.5, 0), 1) * 100;
+
+                blackMask.style.clipPath = `polygon(
+                    0% ${y1}%, 25% ${y1}%, 
+                    25% ${y2}%, 50% ${y2}%, 
+                    50% ${y3}%, 75% ${y3}%, 
+                    75% ${y4}%, 100% ${y4}%, 
+                    100% 100%, 0% 100%
+                )`;
+            }
+/* --------------------------------------------------------
+               [6~7단계] progress 0.70 ~ 1.0 : #333 유지(텀) ➔ 하얀 그라데이션 차오름 ➔ "글자" 마키 완벽 탈출
+               -------------------------------------------------------- */
+            else if (progress > 0.70) {
+                zoomBox.style.width = "100vw"; zoomBox.style.height = "100vh"; zoomBox.style.right = "0%"; zoomBox.style.bottom = "0%"; zoomBox.style.borderRadius = "0px";
+                blackMask.style.top = "0%";
+                blackMask.style.clipPath = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
+
+                let stepProgress = (progress - 0.70) / 0.30; 
+
+                // 스크롤 한 번 정도의 텀 구현 구간 (stepProgress 0.35까지 흑색 홀딩)
+                if (stepProgress <= 0.35) {
+                    whiteGradient.style.top = "100%";
+                    marqueeWrap.style.display = "none";
+                } 
+                else {
+                    let actualProgress = (stepProgress - 0.35) / (1 - 0.35);
+
+                    /* 6단계: 화이트 그라데이션 상승 (타점 0.3 지정) */
+                    let gridTarget = 0.3; 
+                    let gradProgress = actualProgress / gridTarget;
+                    if (gradProgress > 1) gradProgress = 1;
+                    let gradTop = 100 - (gradProgress * 100);
+                    whiteGradient.style.top = `${gradTop}%`;
+
+                    /* 7단계: 최종 마키 무빙 (화면 밖으로 완벽 탈출) */
+                    if (actualProgress >= gridTarget) {
+                        marqueeWrap.style.display = "block";
+                        
+                        let marqueeProgress = (actualProgress - gridTarget) / (1 - gridTarget);
+                        
+                        // [최종 보정] 이동 거리를 250vw로 확장하여 글자 전체가 화면 왼쪽 문방 밖으로 100% 완전히 빠져나가게 만듭니다.
+                        marqueeWrap.style.left = "0%";
+                        marqueeWrap.style.transform = `translate3d(${100 - (marqueeProgress * 250)}vw, -50%, 0)`;
+                    } else {
+                        marqueeWrap.style.display = "none";
+                    }
+                }
             }
         });
     }
-
 
     /* ==========================================================
        3. 일반 콘텐츠 스크롤 페이드인 (Intersection Observer)
        ========================================================== */
     const fadeElements = document.querySelectorAll('.observe-fade');
-    
-    const fadeObserverOptions = {
-        root: null,
-        rootMargin: '0px 0px -100px 0px',
-        threshold: 0.1
-    };
+    const fadeObserverOptions = { root: null, rootMargin: '0px 0px -100px 0px', threshold: 0.1 };
 
     const fadeObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
@@ -114,12 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }, fadeObserverOptions);
-
     fadeElements.forEach(el => fadeObserver.observe(el));
 
-
     /* ==========================================================
-       4. Our System 탭 메뉴 마우스 호버(mouseenter) 전환 효과
+       4. Our System 탭 메뉴 마우스 호버(mouseenter) 효과
        ========================================================== */
     const tabMenuItems = document.querySelectorAll('.tab-menu li');
     const tabContents = document.querySelectorAll('.tab-content-box');
@@ -127,12 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tabMenuItems.forEach(item => {
         item.addEventListener('mouseenter', (e) => {
             e.preventDefault();
-
             tabMenuItems.forEach(tab => tab.classList.remove('active'));
             item.classList.add('active');
-
             const targetTabId = item.getAttribute('data-tab');
-
             tabContents.forEach(content => {
                 if (content.id === targetTabId) {
                     content.classList.add('active');
@@ -142,7 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
-
 
     /* ==========================================================
        5. GNB 햄버거 메뉴 토글 로직
@@ -156,5 +218,4 @@ document.addEventListener("DOMContentLoaded", () => {
             header.classList.toggle('all-menu-mode');
         });
     }
-
 });

@@ -48,8 +48,8 @@
     position: fixed;
     top: 0; left: 0; width: 100%;
     z-index: 1000;
-    background-color: #797979; /* 시안 상단 회색 톤 반영 */
-    border-bottom: 2px solid #d32f2f; /* 시안의 붉은 가이드라인 반영 */
+    background-color: #797979;
+    border-bottom: 2px solid #d32f2f;
     transition: background-color 0.3s ease;
 }
 .header-inner {
@@ -65,7 +65,6 @@
     font-size: 24px; font-weight: 700; color: #fff; letter-spacing: 1px; 
 }
 
-/* GNB 대메뉴 레이아웃 */
 .gnb {
     flex: 1;
     display: flex;
@@ -73,7 +72,7 @@
 }
 .main-menu {
     display: flex;
-    gap: 100px; /* 메뉴 간격 넓게 배치 */
+    gap: 100px;
 }
 .main-menu > li {
     position: relative;
@@ -88,13 +87,12 @@
     display: block;
 }
 
-/* 2depth 서브메뉴 기본 상태 (개별 마우스 오버용) */
 .main-menu > li .depth2 {
     position: absolute;
     top: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background-color: rgba(68, 68, 68, 0.95); /* 시안의 어두운 서브 배경색 */
+    background-color: rgba(68, 68, 68, 0.95);
     min-width: 220px;
     padding: 20px 10px;
     opacity: 0;
@@ -117,17 +115,15 @@
     transition: color 0.2s;
 }
 .main-menu > li .depth2 li a:hover {
-    color: #ffcccc; /* 서브메뉴 호버 시 포인트 컬러 */
+    color: #ffcccc;
 }
 
-/* 개별 메뉴 호버 액션 */
 .main-menu > li:hover .depth2 {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
 }
 
-/* ── 햄버거 토글 버튼 스타일 ── */
 .menu-toggle {
     width: 30px;
     height: 24px;
@@ -147,7 +143,6 @@
     transition: all 0.3s ease;
 }
 
-/* 햄버거 활성화 상태 (X자 변형) */
 .menu-toggle.all-open span:nth-child(1) {
     transform: translateY(10px) rotate(45deg);
 }
@@ -158,7 +153,6 @@
     transform: translateY(-10px) rotate(-45deg);
 }
 
-/* ── 햄버거 활성화 시 전체 메뉴 풀다운 모드 ── */
 .header.all-menu-mode {
     background-color: rgba(68, 68, 68, 0.98);
     height: auto;
@@ -192,70 +186,95 @@
     transform: translateY(0);
 }
 
-
 /* ==========================================================
-   4. 본문 콘텐츠 섹션 레이아웃
+   4. 본문 콘텐츠 섹션 레이아웃 (7단계 타임라인 매핑)
    ========================================================== */
-
-/* ── 통합 메인 비주얼 섹션 ── */
 .main-visual-wrapper {
     position: relative;
-    height: 300vh; /* 애니메이션 타임라인 확보 */
-    background-color: #eeeeee;
+    height: 600vh;
+    background-color: #fff;
     padding: 0;
 }
+
 .sticky-container {
     position: sticky;
     top: 0; left: 0; width: 100%; height: 100vh;
     overflow: hidden;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
-/* 초기 상태: 우측 하단에 위치한 작은 사각형 */
+
 .zoom-image-box {
     position: absolute;
-    right: 10%; bottom: 10%;
-    width: 400px; height: 550px;
+    right: 5%; bottom: 10%;
+    width: 350px; height: 450px;
     z-index: 1;
     transform-origin: right bottom;
     border-radius: 6px;
     will-change: width, height, right, bottom, border-radius;
 }
-.zoom-image-box .image-placeholder {
-    width: 100%; height: 100%; border-radius: inherit;
+.main-bg-photo {
+    width: 100%; height: 100%;
+    background-color: #6da2cb;
+    color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;
 }
-/* 텍스트 배치 및 투명도 초기화 */
+
+/* 깨져있던 이 주석 괄호 영역 구문 완전 보정 완료 */
+.black-mask-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100vh;
+    background-color: #333;
+    z-index: 10; /* 글자 레이어(5)보다 위에 배치하여 확실하게 가림 */
+    opacity: 0;
+    visibility: hidden;
+    
+    will-change: top, clip-path, opacity, visibility;
+}
+
+.white-gradient-layer {
+    position: absolute;
+    top: 100%; left: 0; width: 100%; height: 100vh;
+    background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 70%, rgba(255,255,255,0) 100%);
+    z-index: 15;
+    will-change: top;
+}
+
+.final-marquee-wrap {
+    position: absolute;
+    top: 50%; left: 100%;
+    transform: translateY(-50%);
+    width: max-content;
+    z-index: 20;
+    display: none;
+}
+.final-marquee-track span {
+    font-size: 140pt;
+    font-weight: 900;
+    color: #dcdcdc;
+    white-space: nowrap;
+    letter-spacing: -2px;
+}
+
 .text-overlay-container {
-    position: relative;
-    z-index: 2;
-    width: 100%;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100vh;
+    z-index: 5; /* 흑색 마스크보다 밑으로 설정해 가려지게 만듬 */
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    pointer-events: none;
 }
-.visual-text-box {
-    max-width: 600px;
-}
+.visual-text-box { width: 100%; max-width: 800px; padding: 0 20px; }
 .visual-text-box .main-title {
-    font-size: 52px;
-    font-weight: 700;
-    margin-bottom: 25px;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    font-size: 56px; font-weight: 800; margin-bottom: 25px; color: #fff;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.4);
 }
-/* "YCN은" 한 글자씩 처리용 */
 .char {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(30px);
-    will-change: opacity, transform;
+    display: inline-block; opacity: 0; transform: translateY(30px);
 }
-/* 서브 문구 초기 상태 */
 .scroll-fade-up {
-    font-size: 22px;
-    color: #fff;
-    line-height: 1.5;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    opacity: 0;
-    transform: translateY(40px);
-    will-change: opacity, transform;
+    font-size: 24px; color: #fff; line-height: 1.6;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.4); opacity: 0; transform: translateY(40px);
 }
 
 /* ── 슬로건 섹션 ── */
@@ -271,20 +290,17 @@
     text-shadow: 0 4px 15px rgba(0,0,0,0.15); 
 }
 
-/* ── 시스템 섹션 (배경 슬로건 흐르기 효과 업데이트) ── */
+/* ── 시스템 섹션 ── */
 .system-section { 
     background-color: #fff; 
-    padding: 100px 0 160px 0; /* 하단 텍스트 공간 확보를 위해 패딩 아래쪽 확장 */
+    padding: 100px 0 160px 0;
     position: relative;
-    overflow: hidden; /* 흘러 넘치는 글자 숨김 */
+    overflow: hidden;
 }
-
-/* 콘텐츠들이 흐르는 배경 글자보다 위로 올라오도록 뎁스 지정 */
 .system-section .container {
     position: relative;
     z-index: 2;
 }
-
 .system-header {
     display: flex;
     justify-content: space-between;
@@ -306,7 +322,6 @@
 }
 .btn-more:hover { color: #333; }
 
-/* 탭 메뉴 */
 .tab-menu { 
     display: flex; 
     justify-content: space-between;
@@ -324,7 +339,6 @@
     background-color: #000;
 }
 
-/* 탭 콘텐츠 */
 .tab-container { position: relative; min-height: 400px; }
 .tab-content-box {
     display: flex; gap: 60px; align-items: flex-start;
@@ -342,49 +356,47 @@
 .image-side { flex: 1.2; }
 .image-side .image-placeholder { width: 100%; height: 400px; background-color: #c4c4c4; border: none; border-radius: 0; }
 
-/* ── [신규 추가] 배경 바텀 무한 흐르기 텍스트 스타일 ── */
 .bg-marquee-wrap {
     position: absolute;
-    bottom: -120px; /* 섹션 맨 바텀에 걸치도록 배치 */
+    bottom: -30px;
     left: 50%;
     transform: translateX(-50%);
     width: 100vw;
     overflow: hidden;
-    z-index: -1; /* 콘텐츠보다 뒤쪽 레이어 */
-    pointer-events: none; /* 클릭 및 드래그 방해 방지 */
+    z-index: -1;
+    pointer-events: none;
     user-select: none;
 }
 .marquee-track {
     display: flex;
     width: max-content;
     white-space: nowrap;
-    animation: textFlow 60s linear infinite; /* 30초 동안 무한 왼쪽 이동 */
+    animation: textFlow 30s linear infinite;
 }
 .marquee-track span {
-    font-size: 130pt; /* 요구하신 130pt 크기 선언 */
+    font-size: 130pt;
     font-weight: 900;
-    color: #e8e8e8; /* 요구하신 연한 회색 컬러 적용 */
-    opacity: 20%;
+    color: #e8e8e8;
+    opacity: 0.2;
     letter-spacing: -2px;
     line-height: 1;
-    padding: 5vw;
+    padding-right: 5vw;
 }
 
-/* 왼쪽으로 부드럽게 흐르는 애니메이션 키프레임 */
 @keyframes textFlow {
     0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-50%, 0, 0); } /* 절반만큼 밀었을 때 완벽한 루프 연결 */
+    100% { transform: translate3d(-50%, 0, 0); }
 }
 
-/* 모바일 및 태블릿 미디어쿼리 내 보정 */
 @media (max-width: 992px) {
     .tab-menu { display: grid; grid-template-columns: repeat(4, 1fr); }
-    .marquee-track span { font-size: 80pt; } /* 화면이 작아질 땐 폰트 크기 유연화 */
+    .marquee-track span { font-size: 80pt; }
 }
 @media (max-width: 768px) {
     .tab-menu { grid-template-columns: repeat(2, 1fr); }
     .tab-content-box { flex-direction: column-reverse; gap: 30px; }
 }
+
 /* ── 3SZONE 섹션 ── */
 .zone-section { background-color: #0c0d12; color: #fff; }
 .zone-box {
@@ -402,11 +414,12 @@
 
 /* ── 파트너사 자동 롤링 슬라이더 ── */
 .partner-section { background-color: #f0f0f0; overflow: hidden; padding: 60px 0; }
-.partner-title { font-size: 42px;
+.partner-title { 
+    font-size: 42px;
     font-weight: 800;
     margin-bottom: 20px;
     letter-spacing: -1px;
-    }
+}
 .slider-wrap { width: 100%; overflow: hidden; }
 .slider-track { display: flex; width: calc(220px * 10); animation: rolling infinite 20s linear; }
 .slide { width: 220px; display: flex; justify-content: center; align-items: center; }
@@ -415,7 +428,6 @@
     0% { transform: translateX(0); }
     100% { transform: translateX(calc(-220px * 5)); }
 }
-
 
 /* ==========================================================
    5. 하단 푸터 영역
@@ -426,10 +438,6 @@
 .footer-info .copy { margin-top: 15px; font-size: 12px; }
 .footer-logo { font-size: 24px; font-weight: 700; color: #333; }
 
-
-/* ==========================================================
-   6. 반응형 모바일 미디어 쿼리
-   ========================================================== */
 @media (max-width: 768px) {
     .flex-row, .tab-content-box, .zone-box, .footer .container { 
         flex-direction: column; 
